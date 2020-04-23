@@ -23,8 +23,9 @@ class LRUCache:
     """
     def get(self, key):
         if key in self.storage_dict:
-            self.dll.move_to_front(self.storage_dict[key])
-            return(self.storage_dict[key].value)
+            new_node = self.storage_dict[key]
+            self.dll.move_to_front(new_node)
+            return(new_node.value[1])
         else:
             return None
 
@@ -42,22 +43,19 @@ class LRUCache:
     """
     def set(self, key, value):
         if key in self.storage_dict:
-            self.storage_dict[key].value = value
             existing_node = self.storage_dict[key]
+            new_value = (key, value)
+            existing_node.value = new_value
             self.dll.move_to_front(existing_node)
             return
         if self.size == self.limit:
-            oldest_node = self.dll.tail
-            self.dll.delete(oldest_node)
-            del self.storage_dict[oldest_node]
-            new_node = ListNode(value)
-            self.storage_dict.update({key:new_node})
-            self.dll.move_to_front(new_node)
-        else:
-            new_node = ListNode(value)
-            self.storage_dict.update({key:new_node})
-            self.dll.add_to_head(new_node)
-            self.size += 1
+            del self.storage_dict[self.dll.tail.value[0]]
+            self.dll.remove_from_tail()
+            self.size -= 1
+        new_value = (key, value)
+        self.dll.add_to_head(new_value)
+        self.storage_dict[key] = self.dll.head
+        self.size += 1
 
 
 # cache = LRUCache(3)
@@ -65,11 +63,7 @@ class LRUCache:
 # cache.set('item2', 'b')
 # cache.set('item3', 'c')
 # print(cache.get('item1'))
-# print(cache.get('item2'))
-# print(cache.get('item3'))
-# print(cache.size)
 # cache.set('item4', 'd')
-# print(cache.size)
 # print(cache.get('item1'))
 # print(cache.get('item3'))
 # print(cache.get('item4'))
